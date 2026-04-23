@@ -1,22 +1,15 @@
 import streamlit as st
 import pandas as pd
 
-# ---------------------------
-# PAGE CONFIG
-# ---------------------------
 st.set_page_config(
-    page_title="Customer Value Analytics",
+    page_title="Customer Lifetime Value Dashboard",
     layout="wide"
 )
 
-# ---------------------------
-# LOAD DATA
-# ---------------------------
+
 df = pd.read_csv("CLV_Final_Output.csv")
 
-# ---------------------------
-# CSS
-# ---------------------------
+
 st.markdown("""
 <style>
 .main {
@@ -65,9 +58,7 @@ div.stButton > button:first-child:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------
-# SIDEBAR INPUTS
-# ---------------------------
+
 st.sidebar.title("Customer Inputs")
 
 age = st.sidebar.slider("Age", 18, 80, 35)
@@ -80,27 +71,20 @@ active = st.sidebar.selectbox("Active Member", ["Yes","No"])
 country = st.sidebar.selectbox("Country", ["France","Germany","Spain"])
 gender = st.sidebar.selectbox("Gender", ["Male","Female"])
 
-predict = st.sidebar.button("Predict Customer Value")
+predict = st.sidebar.button("Predict Customer Lifetime Value")
 
-# ---------------------------
-# HEADER
-# ---------------------------
-st.title("Customer Value Analytics Report")
-st.caption("Real-time Customer Lifetime Value scoring for banking relationship management.")
+st.title("Customer Lifetime Value Analytics Dashboard")
+st.caption("Regression-based banking customer value prediction system")
 
-# ---------------------------
-# DEFAULT SCREEN
-# ---------------------------
 if not predict:
-    st.info("Enter customer details in the sidebar and click Predict Customer Value.")
+    st.info("Enter customer details in the sidebar and click Predict Customer Lifetime Value.")
 
-# ---------------------------
-# PREDICTION
-# ---------------------------
+
 if predict:
 
     active_num = 1 if active == "Yes" else 0
 
+    # Regression-style scoring logic
     clv = (
         balance * 0.35 +
         tenure * 5000 +
@@ -110,25 +94,23 @@ if predict:
         salary * 0.05
     )
 
-    # FIXED BUSINESS THRESHOLDS
+    # Segment Classification
     if clv < 100000:
         segment = "Low Value Customer"
-        recommendation = "Increase engagement through offers, product awareness, and cross-sell campaigns."
+        recommendation = "Increase engagement through offers, awareness campaigns, and cross-selling."
         color_box = "red-box"
 
     elif clv <= 150000:
         segment = "Medium Value Customer"
-        recommendation = "Upsell suitable products and maintain regular engagement."
+        recommendation = "Upsell suitable products and maintain regular customer engagement."
         color_box = "yellow-box"
 
     else:
         segment = "High Value Customer"
-        recommendation = "Retain with premium offers, loyalty rewards, and dedicated relationship manager."
+        recommendation = "Retain with premium services, loyalty rewards, and relationship management."
         color_box = "blue-box"
 
-    # ---------------------------
-    # OUTPUT
-    # ---------------------------
+
     col1, col2 = st.columns(2)
 
     with col1:
@@ -148,13 +130,11 @@ if predict:
     with col2:
         st.markdown(f"""
         <div class='{color_box}'>
-        <h4>Recommendation</h4>
+        <h4>Recommended Action</h4>
         <p>{recommendation}</p>
         </div>
         """, unsafe_allow_html=True)
 
-# ---------------------------
-# FOOTER
 # ---------------------------
 st.write("")
 st.caption("Applied Business Analytics Final Project")
