@@ -15,53 +15,58 @@ st.set_page_config(
 df = pd.read_csv("CLV_Final_Output.csv")
 
 # ---------------------------
-# CUSTOM CSS
+# CSS
 # ---------------------------
 st.markdown("""
 <style>
 .main {
-    background-color: #f5f7fa;
+    background-color:#f5f7fa;
 }
 .block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-.metric-box {
-    background: white;
-    padding: 18px;
-    border-radius: 14px;
-    box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
-    text-align:center;
+    padding-top:2rem;
+    padding-bottom:2rem;
 }
 .big-card {
-    background: white;
-    padding: 28px;
-    border-radius: 18px;
-    box-shadow: 0px 3px 10px rgba(0,0,0,0.08);
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0px 3px 10px rgba(0,0,0,0.08);
 }
-.side-note {
-    background:#ffffff;
-    padding:18px;
-    border-radius:12px;
-    box-shadow:0px 2px 6px rgba(0,0,0,0.06);
+.blue-box {
+    background:#E3F2FD;
+    padding:22px;
+    border-radius:16px;
+    border-left:8px solid #1565C0;
+}
+.yellow-box {
+    background:#FFF8E1;
+    padding:22px;
+    border-radius:16px;
+    border-left:8px solid #F9A825;
+}
+.red-box {
+    background:#FFEBEE;
+    padding:22px;
+    border-radius:16px;
+    border-left:8px solid #C62828;
 }
 div.stButton > button:first-child {
-    background-color: #1565C0;
-    color: white;
-    border-radius: 8px;
-    border: none;
-    padding: 0.6em 1.2em;
-    font-weight: 600;
+    background-color:#1565C0;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:0.6em 1.2em;
+    font-weight:600;
 }
 div.stButton > button:first-child:hover {
-    background-color: #0D47A1;
-    color: white;
+    background-color:#0D47A1;
+    color:white;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------
-# SIDEBAR INPUTS
+# SIDEBAR
 # ---------------------------
 st.sidebar.title("Customer Inputs")
 
@@ -84,39 +89,14 @@ st.title("Customer Value Analytics Report")
 st.caption("Real-time Customer Lifetime Value scoring for banking relationship management.")
 
 # ---------------------------
-# TOP KPI METRICS
+# DEFAULT VALUES
 # ---------------------------
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown(f"""
-    <div class='metric-box'>
-    <h5>Average CLV</h5>
-    <h2>₹{round(df['CLV'].mean(),0):,.0f}</h2>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown(f"""
-    <div class='metric-box'>
-    <h5>Total Customers</h5>
-    <h2>{len(df):,}</h2>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    churn = round(df['Exited'].mean()*100,2)
-    st.markdown(f"""
-    <div class='metric-box'>
-    <h5>Churn Rate</h5>
-    <h2>{churn}%</h2>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.write("")
+clv = 0
+segment = ""
+recommendation = ""
 
 # ---------------------------
-# PREDICTION LOGIC
+# PREDICTION
 # ---------------------------
 if predict:
 
@@ -132,50 +112,44 @@ if predict:
     )
 
     if clv >= df["CLV"].quantile(0.75):
-        segment = "High Value"
-        action = "Recommended for premium retention programs."
+        segment = "High Value Customer"
+        recommendation = "Retain with premium offers, loyalty rewards, and dedicated relationship manager."
+        color_box = "blue-box"
+
     elif clv <= df["CLV"].quantile(0.25):
-        segment = "Low Value"
-        action = "Needs engagement and cross-sell opportunities."
+        segment = "Low Value Customer"
+        recommendation = "Increase engagement through offers, product awareness, and cross-sell campaigns."
+        color_box = "red-box"
+
     else:
-        segment = "Medium Value"
-        action = "Suitable for loyalty and upsell programs."
+        segment = "Medium Value Customer"
+        recommendation = "Upsell suitable products and maintain regular engagement."
+        color_box = "yellow-box"
+
+    # ---------------------------
+    # OUTPUT
+    # ---------------------------
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(f"""
+        <div class='big-card'>
+        <h4>Predicted Customer Lifetime Value</h4>
+        <h1>₹{clv:,.0f}</h1>
+        <h3>{segment}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(f"""
+        <div class='{color_box}'>
+        <h4>Recommendation</h4>
+        <p>{recommendation}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 else:
-    clv = round(df["CLV"].mean(),0)
-    segment = "Not Calculated"
-    action = "Enter values and click Predict."
-
-# ---------------------------
-# MAIN BODY
-# ---------------------------
-left, right = st.columns([2,1])
-
-with left:
-    st.markdown(f"""
-    <div class='big-card'>
-    <h4>Predicted Customer Lifetime Value</h4>
-    <h1>₹{clv:,.0f}</h1>
-    <h3>{segment}</h3>
-    <p>{action}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with right:
-    st.markdown("""
-    <div class='side-note'>
-    <h4>Model Inputs Used</h4>
-    <p>Age</p>
-    <p>Credit Score</p>
-    <p>Balance</p>
-    <p>Salary</p>
-    <p>Products</p>
-    <p>Tenure</p>
-    <p>Country</p>
-    <p>Gender</p>
-    <p>Activity Status</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.info("Enter customer details in the sidebar and click Predict Customer Value.")
 
 # ---------------------------
 # FOOTER
