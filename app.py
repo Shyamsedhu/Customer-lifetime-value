@@ -66,7 +66,7 @@ div.stButton > button:first-child:hover {
 """, unsafe_allow_html=True)
 
 # ---------------------------
-# SIDEBAR
+# SIDEBAR INPUTS
 # ---------------------------
 st.sidebar.title("Customer Inputs")
 
@@ -89,11 +89,10 @@ st.title("Customer Value Analytics Report")
 st.caption("Real-time Customer Lifetime Value scoring for banking relationship management.")
 
 # ---------------------------
-# DEFAULT VALUES
+# DEFAULT SCREEN
 # ---------------------------
-clv = 0
-segment = ""
-recommendation = ""
+if not predict:
+    st.info("Enter customer details in the sidebar and click Predict Customer Value.")
 
 # ---------------------------
 # PREDICTION
@@ -111,20 +110,21 @@ if predict:
         salary * 0.05
     )
 
-    if clv >= df["CLV"].quantile(0.75):
-        segment = "High Value Customer"
-        recommendation = "Retain with premium offers, loyalty rewards, and dedicated relationship manager."
-        color_box = "blue-box"
-
-    elif clv <= df["CLV"].quantile(0.25):
+    # FIXED BUSINESS THRESHOLDS
+    if clv < 100000:
         segment = "Low Value Customer"
         recommendation = "Increase engagement through offers, product awareness, and cross-sell campaigns."
         color_box = "red-box"
 
-    else:
+    elif clv <= 150000:
         segment = "Medium Value Customer"
         recommendation = "Upsell suitable products and maintain regular engagement."
         color_box = "yellow-box"
+
+    else:
+        segment = "High Value Customer"
+        recommendation = "Retain with premium offers, loyalty rewards, and dedicated relationship manager."
+        color_box = "blue-box"
 
     # ---------------------------
     # OUTPUT
@@ -137,6 +137,11 @@ if predict:
         <h4>Predicted Customer Lifetime Value</h4>
         <h1>₹{clv:,.0f}</h1>
         <h3>{segment}</h3>
+        <p>
+        Low Value: Below ₹100,000<br>
+        Medium Value: ₹100,000 – ₹150,000<br>
+        High Value: Above ₹150,000
+        </p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -147,9 +152,6 @@ if predict:
         <p>{recommendation}</p>
         </div>
         """, unsafe_allow_html=True)
-
-else:
-    st.info("Enter customer details in the sidebar and click Predict Customer Value.")
 
 # ---------------------------
 # FOOTER
