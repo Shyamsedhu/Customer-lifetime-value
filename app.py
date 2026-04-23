@@ -1,13 +1,22 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+
+# ---------------------------
+# PAGE CONFIG
+# ---------------------------
 st.set_page_config(
     page_title="Customer Value Analytics",
     layout="wide"
 )
 
+# ---------------------------
+# LOAD DATA
+# ---------------------------
 df = pd.read_csv("CLV_Final_Output.csv")
 
+# ---------------------------
+# CUSTOM CSS
+# ---------------------------
 st.markdown("""
 <style>
 .main {
@@ -32,13 +41,28 @@ st.markdown("""
 }
 .side-note {
     background:#ffffff;
-    padding:15px;
+    padding:18px;
     border-radius:12px;
     box-shadow:0px 2px 6px rgba(0,0,0,0.06);
+}
+div.stButton > button:first-child {
+    background-color: #1565C0;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 0.6em 1.2em;
+    font-weight: 600;
+}
+div.stButton > button:first-child:hover {
+    background-color: #0D47A1;
+    color: white;
 }
 </style>
 """, unsafe_allow_html=True)
 
+# ---------------------------
+# SIDEBAR INPUTS
+# ---------------------------
 st.sidebar.title("Customer Inputs")
 
 age = st.sidebar.slider("Age", 18, 80, 35)
@@ -53,9 +77,15 @@ gender = st.sidebar.selectbox("Gender", ["Male","Female"])
 
 predict = st.sidebar.button("Predict Customer Value")
 
+# ---------------------------
+# HEADER
+# ---------------------------
 st.title("Customer Value Analytics Report")
 st.caption("Real-time Customer Lifetime Value scoring for banking relationship management.")
 
+# ---------------------------
+# TOP KPI METRICS
+# ---------------------------
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -85,9 +115,12 @@ with col3:
 
 st.write("")
 
+# ---------------------------
+# PREDICTION LOGIC
+# ---------------------------
 if predict:
 
-    active_num = 1 if active=="Yes" else 0
+    active_num = 1 if active == "Yes" else 0
 
     clv = (
         balance * 0.35 +
@@ -100,19 +133,22 @@ if predict:
 
     if clv >= df["CLV"].quantile(0.75):
         segment = "High Value"
-        action = "Retain with premium offers and relationship manager."
+        action = "Recommended for premium retention programs."
     elif clv <= df["CLV"].quantile(0.25):
         segment = "Low Value"
-        action = "Cross-sell products and improve engagement."
+        action = "Needs engagement and cross-sell opportunities."
     else:
         segment = "Medium Value"
-        action = "Upsell products and maintain loyalty."
+        action = "Suitable for loyalty and upsell programs."
 
 else:
     clv = round(df["CLV"].mean(),0)
     segment = "Not Calculated"
     action = "Enter values and click Predict."
 
+# ---------------------------
+# MAIN BODY
+# ---------------------------
 left, right = st.columns([2,1])
 
 with left:
@@ -125,32 +161,7 @@ with left:
     </div>
     """, unsafe_allow_html=True)
 
-    st.write("")
-
-    st.subheader("Average CLV by Country")
-    geo = pd.DataFrame({
-        "Country":["France","Germany","Spain"],
-        "CLV":[
-            df[df["Geography_Germany"]==0]["CLV"].mean(),
-            df[df["Geography_Germany"]==1]["CLV"].mean(),
-            df[df["Geography_Spain"]==1]["CLV"].mean()
-        ]
-    })
-    st.bar_chart(geo.set_index("Country"))
-
 with right:
-    st.markdown("""
-    <div class='side-note'>
-    <h4>Business Recommendation</h4>
-    <p>• Prioritize high-value customers.</p>
-    <p>• Reduce churn in profitable accounts.</p>
-    <p>• Promote multi-product adoption.</p>
-    <p>• Target low-value users with campaigns.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.write("")
-
     st.markdown("""
     <div class='side-note'>
     <h4>Model Inputs Used</h4>
@@ -160,8 +171,14 @@ with right:
     <p>Salary</p>
     <p>Products</p>
     <p>Tenure</p>
+    <p>Country</p>
+    <p>Gender</p>
+    <p>Activity Status</p>
     </div>
     """, unsafe_allow_html=True)
 
+# ---------------------------
+# FOOTER
+# ---------------------------
 st.write("")
 st.caption("Applied Business Analytics Final Project")
